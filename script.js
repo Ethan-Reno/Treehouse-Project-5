@@ -1,18 +1,6 @@
+let searchProfiles = [];
 
-// Using proxy to avoid cors issue on the API's end
-let proxyUrl = 'https://cors-anywhere.herokuapp.com/',
-    targetUrl = 'https://randomuser.me/api/?results=12'
-
-// Fetch request
-fetch(proxyUrl + targetUrl)
-    .then(data => data.json())
-    .then(data => {
-        console.log(data);
-        createProfiles(data.results)
-    })
-    .catch(error => console.log('There was a problem: ', error))
-
-// Comments
+// Generate profile data for each employee generated from the API fetch
 function createProfiles(data) {
     const gallery = document.getElementById('gallery');
     gallery.innerHTML = '';
@@ -28,10 +16,10 @@ function createProfiles(data) {
                     <p class="card-text cap">${data[i].location.city}, ${data[i].location.state}</p>
                 </div>
             </div>
-        `)    
+        `)
     }
+    // Generate a modal window for a user that is selected
     const cards = document.querySelectorAll('.card');
-    console.log(Array.from(cards));
     cards.forEach(card => {
         card.addEventListener('click', (e) => {
             createModal(parseInt(e.currentTarget.id), data)
@@ -39,7 +27,7 @@ function createProfiles(data) {
     })
 }
 
-// Comments
+// Generate a modal window with data from the API fetch
 function createModal(index, data) {
     const modalWindow = document.createElement('div');
     let cellNumber = formatPhoneNumber(data[index].cell);
@@ -62,28 +50,71 @@ function createModal(index, data) {
                     <p class="modal-text">Birthday: ${birthday}</p>
                 </div>
             </div>
+            <div class="modal-btn-container">
+                    <button type="button" id="modal-prev" class="modal-prev btn">Prev</button>
+                    <button type="button" id="modal-next" class="modal-next btn">Next</button>
+            </div>
         </div>
     `;
     document.querySelector('body').appendChild(modalWindow)
+    
+    // Close the modal window when clicking the X
     const closeButton = document.getElementById('modal-close-btn');
     closeButton.addEventListener('click', (e) => {
         document.querySelector('body').removeChild(modalWindow)
     })
+
+    // Display prev and next buttons on modal windows
+    const prev = document.getElementById('modal-prev');
+    const next = document.getElementById('modal-next');
+    if (index === 0) {
+        prev.style.display = "none";
+    } else if (index === 11) {
+        next.style.display = "none";
+    }
+
+    // Move between modal windows with prev and next
+    prev.addEventListener('click', (e) => {
+        document.querySelector('body').removeChild(modalWindow)
+        createModal(index - 1, data)
+    });
+    next.addEventListener('click', (e) => {
+        document.querySelector('body').removeChild(modalWindow)
+        createModal(index + 1, data)
+    });
 }
 
+// Add search bar
+const searchBar = document.querySelector('.search-container');
+searchBar.innerHTML =`
+    <form action="#" method="get">
+        <input type="search" id="search-input" class="search-input" placeholder="Search...">
+        <input type="submit" value="&#x1F50D;" id="search-submit" class="search-submit">
+    </form>
+`;
 
-//Helper Functions
+// Search bar functionality
+function filterProfiles(searchInput, data) {
+    searchProfiles = [];
+    // Push profiles to filteredProfiles array
+    data.forEach(profile => {
+        if (profile.name.first.toLowerCase().includes(searchInput) || profile.name.last.toLowerCase().includes(searchInput)){
+            searchProfiles.push(profile);
+        }
+    })
+    // Generate new profile cards using searchProfiles array
+    createProfiles(searchProfiles);
+}
+
+// Helper Functions
 
 // Regex function to format phone numbers to (###) ###-####
 function formatPhoneNumber(value) {
     let formatted = value.replace(/\D/g, '');
-    console.log(formatted);
     let match = formatted.match(/^(\d{3})(\d{3})(\d{4})$/);
-    console.log(match);
     if (match) {
         return '(' + match[1] + ') ' + match[2] + '-' + match[3]
     }
-    return 'Invalid Phone Number Format'
 }
 
  // Regex function to format birthday values to MM/DD/YYYY
