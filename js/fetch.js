@@ -6,7 +6,7 @@ let proxyUrl = 'https://cors-anywhere.herokuapp.com/',
 // Fetch request
 // Grabs 12 profiles from the randomuser.me API, and generates profiles to be displayed on the page
 // Adds an event listener to gather form data in the search bar
-fetch(proxyUrl + targetUrl)
+fetch(targetUrl)
     .then(data => data.json())
     .then(data => {
         createProfiles(data.results)
